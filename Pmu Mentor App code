@@ -1,0 +1,166 @@
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class MentorSearchApp {
+    // Simulated in-memory storage for user data
+    private static HashMap<String, String> users = new HashMap<>();
+    // List to hold mentor details
+    private static ArrayList<Mentor> mentors = new ArrayList<>();
+
+    public static void main(String[] args) {
+        // Populate the mentor list with example data
+        initializeMentors();
+
+        Scanner scanner = new Scanner(System.in);
+        boolean isAppRunning = true;
+
+        // Main menu loop
+        while (isAppRunning) {
+            System.out.println("\n=== Mentor Search Platform (PMU) ===");
+            System.out.println("1. Register as a New User");
+            System.out.println("2. Log In to Your Account");
+            System.out.println("3. Exit the Platform");
+            System.out.print("Select an option: ");
+
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline character
+
+            switch (option) {
+                case 1:
+                    // Register a new user
+                    userAccountRegistration(scanner);
+                    break;
+                case 2:
+                    // Log in with an existing account
+                    userLogin(scanner);
+                    break;
+                case 3:
+                    // Exit the application
+                    isAppRunning = false;
+                    System.out.println("Thank you for using the Mentor Search Platform. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid option. Please choose a valid number.");
+            }
+        }
+        scanner.close();
+    }
+
+    // Functionality for registering new users
+    private static void userAccountRegistration(Scanner scanner) {
+        System.out.println("\n=== User Registration ===");
+        System.out.print("Enter a desired username: ");
+        String username = scanner.nextLine();
+
+        if (users.containsKey(username)) {
+            // Check if the username is already taken
+            System.out.println("This username is already registered. Try a different one.");
+            return;
+        }
+
+        System.out.print("Create a password: ");
+        String password = scanner.nextLine();
+
+        // Hash the password for secure storage
+        String hashedPassword = hashPassword(password);
+
+        if (hashedPassword != null) {
+            users.put(username, hashedPassword);
+            System.out.println("Account created successfully!");
+        } else {
+            System.out.println("An error occurred while processing your registration. Please try again.");
+        }
+    }
+
+    // Functionality for logging in existing users
+    private static void userLogin(Scanner scanner) {
+        System.out.println("\n=== User Login ===");
+        System.out.print("Enter your username: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Enter your password: ");
+        String password = scanner.nextLine();
+
+        String hashedPassword = hashPassword(password);
+
+        if (users.containsKey(username) && users.get(username).equals(hashedPassword)) {
+            // Successful login
+            System.out.println("Welcome back, " + username + "! You have successfully logged in.");
+            mentorSearch(scanner); // Proceed to mentor search
+        } else {
+            // Incorrect username or password
+            System.out.println("Invalid login credentials. Please check your username and password.");
+        }
+    }
+
+    // Functionality for searching mentors based on expertise
+    private static void mentorSearch(Scanner scanner) {
+        System.out.println("\n=== Mentor Search ===");
+        System.out.print("Search for mentors by expertise (e.g., Artificial Intelligence): ");
+        String searchQuery = scanner.nextLine().toLowerCase();
+
+        boolean mentorFound = false;
+        for (Mentor mentor : mentors) {
+            if (mentor.getExpertise().toLowerCase().contains(searchQuery)) {
+                System.out.println(mentor);
+                mentorFound = true;
+            }
+        }
+
+        if (!mentorFound) {
+            System.out.println("No mentors found with expertise in " + searchQuery + ".");
+        }
+    }
+
+    // Add initial mentor data to the system
+    private static void initializeMentors() {
+        mentors.add(new Mentor("Aliah", "Artificial Intelligence"));
+        mentors.add(new Mentor("Lana", "Computer Engineering"));
+        mentors.add(new Mentor("Jory", "Mathematics"));
+        mentors.add(new Mentor("Lubnah", "Network Security"));
+    }
+
+    // Utility method to hash passwords securely
+    private static String hashPassword(String password) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = messageDigest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+
+            for (byte b : hashedBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error: Unable to hash the password. Algorithm not found.");
+            return null;
+        }
+    }
+
+    // Mentor class to hold mentor details
+    static class Mentor {
+        private String name;
+        private String expertise;
+
+        public Mentor(String name, String expertise) {
+            this.name = name;
+            this.expertise = expertise;
+        }
+
+        public String getExpertise() {
+            return expertise;
+        }
+
+        @Override
+        public String toString() {
+            return "Mentor Name: " + name + ", Expertise: " + expertise;
+        }
+    }
+}
